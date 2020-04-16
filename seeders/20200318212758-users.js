@@ -42,17 +42,15 @@ module.exports = {
      */
     const users = await Promise.all([
       User.upsert({
-        id: 1,
         name: "testuser",
         email: "test@test.com",
-        password: bcrypt.hashSync("test1234", SALT_ROUNDS)
+        password: bcrypt.hashSync("test1234", SALT_ROUNDS),
       }),
       User.upsert({
-        id: 2,
         name: "dummy",
         email: "dummy@dummy.com",
-        password: bcrypt.hashSync("dummy1234", SALT_ROUNDS)
-      })
+        password: bcrypt.hashSync("dummy1234", SALT_ROUNDS),
+      }),
     ]);
 
     console.log(`SEEDED: ${users.length} users`);
@@ -60,5 +58,5 @@ module.exports = {
 
   down: (queryInterface, Sequelize) => {
     return queryInterface.bulkDelete("users", null, {});
-  }
+  },
 };
