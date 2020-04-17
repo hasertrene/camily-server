@@ -10,10 +10,20 @@ module.exports = {
       },
       onUpdate: "CASCADE",
       onDelete: "SET NULL",
-    });
+    }),
+      await queryInterface.addColumn("events", "activityId", {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "activities",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "SET NULL",
+      });
   },
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.removeColumn("events", "memberId");
+    await queryInterface.removeColumn("events", "activityId");
   },
 };
