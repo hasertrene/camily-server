@@ -75,11 +75,11 @@ router.patch("/:id", authMiddleware, async (req, res, next) => {
     if (req.user.id === null) {
       return res.status(400).send({ message: "Not logged in!" });
     }
+    const userId = req.user.id;
     const { title, description, date, time, memberId, activityId } = req.body;
     if (!title || !description || !date || !time || !activityId) {
       return res.status(400).send({ message: "Some input missing" });
     }
-    const userId = req.user.id;
     const event = await Events.findByPk(id);
     await event.update({
       title,
