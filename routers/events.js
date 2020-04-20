@@ -26,4 +26,82 @@ router.get("/", authMiddleware, async (req, res, next) => {
   }
 });
 
+router.post("/", authMiddleware, async (req, res, next) => {
+  try {
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const userId = req.user.id;
+    const { title, description, date, time, memberId, activityId } = req.body;
+
+    if (!title || !description || !date || !time || !activityId) {
+      return res.status(400).send({ message: "Some input missing" });
+    }
+
+    const addEvent = await Events.create({
+      title,
+      description,
+      date,
+      time,
+      userId,
+      memberId,
+      activityId,
+    });
+    return res
+      .status(201)
+      .send({ message: "Event added to the calendar!", addEvent });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/:id", authMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const event = await Events.findByPk(id);
+
+    return res.status(200).send({ message: "Event fetched!", event });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch("/:id", authMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const {
+      title,
+      description,
+      date,
+      time,
+      userId,
+      memberId,
+      activityId,
+    } = req.body;
+    if (!title || !description || !date || !time || !activityId) {
+      return res.status(400).send({ message: "Some input missing" });
+    }
+    const userId = req.user.id;
+    const event = await Events.findByPk(id);
+    await event.update({
+      title,
+      description,
+      date,
+      time,
+      userId,
+      memberId,
+      activityId,
+    });
+    return res.status(400).send({ message: "Event updated!", event });
+  } catch (e) {
+    next(e);
+  }
+});
+
 module.exports = router;
