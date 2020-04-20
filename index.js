@@ -111,10 +111,6 @@ if (process.env.DELAY) {
 
 const authMiddleWare = require("./auth/middleware");
 
-app.get("/", (req, res) => {
-  res.send("Hi from express");
-});
-
 const eventsRouter = require("./routers/events");
 app.use("/events", eventsRouter);
 const authRouter = require("./routers/auth");

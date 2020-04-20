@@ -1,4 +1,5 @@
 const User = require("../models").user;
+const Members = require("../models").member;
 const { toData } = require("./jwt");
 
 async function auth(req, res, next) {
@@ -8,13 +9,13 @@ async function auth(req, res, next) {
   if (!auth || !auth[0] === "Bearer" || !auth[1]) {
     res.status(401).send({
       message:
-        "This endpoint requires an Authorization header with a valid token"
+        "This endpoint requires an Authorization header with a valid token",
     });
   }
 
   try {
     const data = toData(auth[1]);
-    const user = await User.findByPk(data.userId);
+    const user = await User.findByPk(data.userId, { include: [Members] });
     if (!user) {
       return res.status(404).send({ message: "User does not exist" });
     }
@@ -39,7 +40,7 @@ async function auth(req, res, next) {
 
       default:
         return res.status(400).send({
-          message: "Something went wrong, sorry"
+          message: "Something went wrong, sorry",
         });
     }
   }
