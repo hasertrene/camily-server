@@ -20,7 +20,10 @@ router.get("/", authMiddleware, async (req, res, next) => {
       include: [Members, Act],
       order: [["date", "ASC"]],
     });
-    res.status(200).send(events);
+
+    const activities = await Act.findAll();
+
+    res.status(200).send({ events, activities });
   } catch (e) {
     next(e);
   }
@@ -90,7 +93,7 @@ router.patch("/:id", authMiddleware, async (req, res, next) => {
       memberId,
       activityId,
     });
-    return res.status(400).send({ message: "Event updated!", event });
+    return res.status(200).send({ message: "Event updated!", event });
   } catch (e) {
     next(e);
   }
