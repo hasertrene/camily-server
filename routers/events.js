@@ -99,4 +99,26 @@ router.patch("/:id", authMiddleware, async (req, res, next) => {
   }
 });
 
+router.delete("/:id", authMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).send({ message: "Event not found" });
+    }
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const getEvent = await Events.findByPk(id);
+
+    if (!getEvent) {
+      return res.status(400).send({ message: "Event not found" });
+    }
+
+    const event = await Events.destroy({ where: { id: id } });
+    return res.status(201).send({ message: "Event deleted" });
+  } catch (e) {
+    next(e);
+  }
+});
+
 module.exports = router;
