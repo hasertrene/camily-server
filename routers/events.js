@@ -37,7 +37,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
     const userId = req.user.id;
     const { title, description, date, time, memberId, activityId } = req.body;
 
-    if (!title || !description || !date || !time || !activityId) {
+    if (!title || !description || !date) {
       return res.status(400).send({ message: "Some input missing" });
     }
 
@@ -80,7 +80,7 @@ router.patch("/:id", authMiddleware, async (req, res, next) => {
     }
     const userId = req.user.id;
     const { title, description, date, time, memberId, activityId } = req.body;
-    if (!title || !description || !date || !time || !activityId) {
+    if (!title || !description || !date) {
       return res.status(400).send({ message: "Some input missing" });
     }
     const event = await Events.findByPk(id);
