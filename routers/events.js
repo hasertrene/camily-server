@@ -41,7 +41,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
       return res.status(400).send({ message: "Some input missing" });
     }
 
-    const addEvent = await Events.create({
+    const event = await Events.create({
       title,
       description,
       date,
@@ -52,7 +52,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
     });
     return res
       .status(201)
-      .send({ message: "Event added to the calendar!", addEvent });
+      .send({ message: "Event added to the calendar!", event });
   } catch (e) {
     next(e);
   }

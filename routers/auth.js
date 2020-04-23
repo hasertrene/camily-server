@@ -73,4 +73,71 @@ router.get("/me", authMiddleware, async (req, res) => {
   res.status(200).send({ ...req.user.dataValues });
 });
 
+router.post("/me", authMiddleware, async (req, res, next) => {
+  try {
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const userId = req.user.id;
+    const { firstName, birthday, gender, colour, parent } = req.body;
+
+    if (!firstName || !birthday || !colour) {
+      return res.status(400).send({ message: "Some input missing!" });
+    }
+
+    const member = await Members.create({
+      firstName,
+      birthday,
+      gender,
+      colour,
+      parent,
+      userId,
+    });
+    return res.status(201).send(member);
+  } catch (e) {
+    next(e);
+  }
+});
+router.patch("/me/:id", authMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const userId = req.user.id;
+    const { firstName, birthday, gender, colour, parent } = req.body;
+
+    if (!firstName || !birthday || !colour) {
+      return res.status(400).send({ message: "Some input missing!" });
+    }
+
+    const member = await Members.findByPk(id);
+    await member.update({
+      firstName,
+      birthday,
+      gender,
+      colour,
+      parent,
+      userId,
+    });
+    return res.status(201).send(member);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.delete("/me/:id", authMiddleware, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const member = await Members.findByPk(id);
+    await member.destroy();
+    return res.status(201).send(member);
+  } catch (e) {
+    next(e);
+  }
+});
+
 module.exports = router;
