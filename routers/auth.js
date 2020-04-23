@@ -18,7 +18,7 @@ router.post("/login", async (req, res, next) => {
         .send({ message: "Please provide both email and password" });
     }
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email }, include: [Members] });
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(400).send({
@@ -34,13 +34,40 @@ router.post("/login", async (req, res, next) => {
     return res.status(400).send({ message: "Something went wrong, sorry" });
   }
 });
+router.patch("/update", authMiddleware, async (req, res, next) => {
+  try {
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const { email, password, name } = req.body;
+    if (!email || !password || !name) {
+      return res
+        .status(400)
+        .send({ message: "Please provide email, password and family name" });
+    }
+
+    const user = await User.findByPk(req.user.id, { include: [Members] });
+
+    if (!bcrypt.compareSync(password, user.password)) {
+      return res.status(400).send({
+        message: "Password incorrect",
+      });
+    }
+    await user.update({ email, name });
+
+    delete user.dataValues["password"]; // don't send back the password hash
+    return res.status(200).send({ ...user.dataValues });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).send({ message: "Something went wrong, sorry" });
+  }
+});
 
 router.post("/signup", async (req, res) => {
   const { email, password, name } = req.body;
   if (!email || !password || !name) {
     return res.status(400).send("Please provide an email, password and a name");
   }
-
   try {
     const newUser = await User.create({
       email,
