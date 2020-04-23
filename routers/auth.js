@@ -4,6 +4,8 @@ const { toJWT } = require("../auth/jwt");
 const authMiddleware = require("../auth/middleware");
 const User = require("../models/").user;
 const Members = require("../models/").member;
+const Events = require("../models").event;
+const Act = require("../models").activity;
 const { SALT_ROUNDS } = require("../config/constants");
 
 const router = new Router();
@@ -120,11 +122,25 @@ router.post("/me", authMiddleware, async (req, res, next) => {
       parent,
       userId,
     });
+    const getMember = await Members.findOne({
+      where: { firstName: member.firstName, userId: member.userId },
+    });
+    const act = await Act.findOne({ where: { type: "Birthday" } });
+    await Events.create({
+      title: `Birthday of ${getMember.firstName}`,
+      description: "Hooray!",
+      date: getMember.birthday,
+      time: null,
+      userId: req.user.id,
+      memberId: getMember.id,
+      activityId: act.id,
+    });
     return res.status(201).send(member);
   } catch (e) {
     next(e);
   }
 });
+
 router.patch("/me/:id", authMiddleware, async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -161,6 +177,10 @@ router.delete("/me/:id", authMiddleware, async (req, res, next) => {
     }
     const member = await Members.findByPk(id);
     await member.destroy();
+    const birthday = await Events.findOne({
+      where: { title: `Birthday of ${member.firstName}` },
+    });
+    await birthday.destroy();
     return res.status(201).send(member);
   } catch (e) {
     next(e);
