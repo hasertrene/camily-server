@@ -80,6 +80,14 @@ router.post("/signup", async (req, res) => {
     delete newUser.dataValues["password"]; // don't send back the password hash
 
     const token = toJWT({ userId: newUser.id });
+    const member = await Members.create({
+      firstName: "Everybody",
+      birthday: "0000-01-01",
+      gender: "Female",
+      colour: "#000000",
+      parent: true,
+      userId: newUser.id,
+    });
 
     res.status(201).json({ token, ...newUser.dataValues });
   } catch (error) {
