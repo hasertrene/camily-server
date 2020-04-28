@@ -68,13 +68,19 @@ router.get("/:year/:month", authMiddleware, async (req, res, next) => {
     if (req.params.month < 0 || req.params.month > 11) {
       return res.status(400).send({ message: "Invalid month!" });
     }
-
+    let month = Number(req.params.month) + 1;
+    if (month < 10) {
+      month = 0 + String(month);
+    }
+    console.log(month);
     const events = await Events.findAll({
       where: {
         userId: req.user.id,
         date: {
-          [Op.startsWith]: req.params.year,
-          [Op.substring]: "-" + req.params.month + "-",
+          [Op.and]: [
+            { [Op.startsWith]: req.params.year },
+            { [Op.substring]: month },
+          ],
         },
       },
       include: [Members, Act],
