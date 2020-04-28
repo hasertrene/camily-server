@@ -135,7 +135,7 @@ router.post("/me", authMiddleware, async (req, res, next) => {
     });
     const act = await Act.findOne({ where: { type: "Birthday" } });
     await Events.create({
-      title: `Birthday of ${getMember.firstName}`,
+      title: `Bday of ${getMember.firstName}`,
       description: "Hooray!",
       date: getMember.birthday,
       time: null,

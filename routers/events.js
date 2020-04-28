@@ -7,6 +7,7 @@ const Events = require("../models").event;
 const Members = require("../models").member;
 const Act = require("../models").activity;
 const { SALT_ROUNDS } = require("../config/constants");
+const { Op } = require("sequelize");
 
 const router = new Router();
 
@@ -17,6 +18,65 @@ router.get("/", authMiddleware, async (req, res, next) => {
     }
     const events = await Events.findAll({
       where: { userId: req.user.id },
+      include: [Members, Act],
+      order: [["date", "ASC"]],
+    });
+
+    const activities = await Act.findAll();
+
+    res.status(200).send({ events, activities });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/:year", authMiddleware, async (req, res, next) => {
+  try {
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    if (req.params.year < 0 || req.params.year > 2500) {
+      return res.status(400).send({ message: "Invalid year!" });
+    }
+
+    const events = await Events.findAll({
+      where: {
+        userId: req.user.id,
+        date: {
+          [Op.startsWith]: req.params.year,
+        },
+      },
+      include: [Members, Act],
+      order: [["date", "ASC"]],
+    });
+
+    const activities = await Act.findAll();
+
+    res.status(200).send({ events, activities });
+  } catch (e) {
+    next(e);
+  }
+});
+router.get("/:year/:month", authMiddleware, async (req, res, next) => {
+  try {
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    if (req.params.year < 0 || req.params.year > 2500) {
+      return res.status(400).send({ message: "Invalid year!" });
+    }
+    if (req.params.month < 0 || req.params.month > 11) {
+      return res.status(400).send({ message: "Invalid month!" });
+    }
+
+    const events = await Events.findAll({
+      where: {
+        userId: req.user.id,
+        date: {
+          [Op.startsWith]: req.params.year,
+          [Op.substring]: "-" + req.params.month + "-",
+        },
+      },
       include: [Members, Act],
       order: [["date", "ASC"]],
     });
@@ -58,19 +118,19 @@ router.post("/", authMiddleware, async (req, res, next) => {
   }
 });
 
-router.get("/:id", authMiddleware, async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    if (req.user.id === null) {
-      return res.status(400).send({ message: "Not logged in!" });
-    }
-    const event = await Events.findByPk(id);
+// router.get("/:id", authMiddleware, async (req, res, next) => {
+//   try {
+//     const { id } = req.params;
+//     if (req.user.id === null) {
+//       return res.status(400).send({ message: "Not logged in!" });
+//     }
+//     const event = await Events.findByPk(id);
 
-    return res.status(200).send({ message: "Event fetched!", event });
-  } catch (e) {
-    next(e);
-  }
-});
+//     return res.status(200).send({ message: "Event fetched!", event });
+//   } catch (e) {
+//     next(e);
+//   }
+// });
 
 router.patch("/:id", authMiddleware, async (req, res, next) => {
   try {
