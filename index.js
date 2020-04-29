@@ -61,7 +61,12 @@ app.use(bodyParserMiddleWare);
  */
 
 const corsMiddleWare = require("cors");
-app.use(corsMiddleWare());
+var corsOptions = {
+  origin: "https://camily-client.netlify.app/",
+  optionsSuccessStatus: 200,
+};
+app.options("*", corsMiddleWare());
+app.use(corsMiddleWare(corsOptions));
 
 /**
  *
