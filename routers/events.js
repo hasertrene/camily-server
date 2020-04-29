@@ -35,7 +35,11 @@ router.get("/:year", authMiddleware, async (req, res, next) => {
     if (req.user.id === null) {
       return res.status(400).send({ message: "Not logged in!" });
     }
-    if (req.params.year < 0 || req.params.year > 2500) {
+    if (
+      req.params.year < 0 ||
+      req.params.year > 2500 ||
+      req.params.year === NaN
+    ) {
       return res.status(400).send({ message: "Invalid year!" });
     }
 
@@ -62,10 +66,18 @@ router.get("/:year/:month", authMiddleware, async (req, res, next) => {
     if (req.user.id === null) {
       return res.status(400).send({ message: "Not logged in!" });
     }
-    if (req.params.year < 0 || req.params.year > 2500) {
+    if (
+      req.params.year < 0 ||
+      req.params.year > 2500 ||
+      req.params.year === NaN
+    ) {
       return res.status(400).send({ message: "Invalid year!" });
     }
-    if (req.params.month < 0 || req.params.month > 11) {
+    if (
+      req.params.month < 0 ||
+      req.params.month > 11 ||
+      req.params.month === NaN
+    ) {
       return res.status(400).send({ message: "Invalid month!" });
     }
     let month = Number(req.params.month) + 1;
@@ -103,11 +115,10 @@ router.post("/", authMiddleware, async (req, res, next) => {
     const userId = req.user.id;
     const { title, description, date, time, memberId, activityId } = req.body;
 
-    if (!title || !description || !date) {
+    if (!title || !date) {
       return res.status(400).send({ message: "Some input missing" });
     }
-
-    const event = await Events.create({
+    const newEvent = await Events.create({
       title,
       description,
       date,
@@ -116,6 +127,16 @@ router.post("/", authMiddleware, async (req, res, next) => {
       memberId,
       activityId,
     });
+    const event = await Events.findOne({
+      where: {
+        date: date,
+        title: title,
+        memberId: memberId,
+        activityId: activityId,
+      },
+      include: [Members, Act],
+    });
+
     return res
       .status(201)
       .send({ message: "Event added to the calendar!", event });
@@ -123,20 +144,6 @@ router.post("/", authMiddleware, async (req, res, next) => {
     next(e);
   }
 });
-
-// router.get("/:id", authMiddleware, async (req, res, next) => {
-//   try {
-//     const { id } = req.params;
-//     if (req.user.id === null) {
-//       return res.status(400).send({ message: "Not logged in!" });
-//     }
-//     const event = await Events.findByPk(id);
-
-//     return res.status(200).send({ message: "Event fetched!", event });
-//   } catch (e) {
-//     next(e);
-//   }
-// });
 
 router.patch("/:id", authMiddleware, async (req, res, next) => {
   try {
@@ -146,11 +153,13 @@ router.patch("/:id", authMiddleware, async (req, res, next) => {
     }
     const userId = req.user.id;
     const { title, description, date, time, memberId, activityId } = req.body;
-    if (!title || !description || !date) {
+    if (!title || !date) {
       return res.status(400).send({ message: "Some input missing" });
     }
-    const event = await Events.findByPk(id);
-    await event.update({
+    const member = await Members.findByPk(memberId);
+    const activity = await Act.findByPk(activityId);
+    const editEvent = await Events.findByPk(id);
+    await editEvent.update({
       title,
       description,
       date,
@@ -159,7 +168,12 @@ router.patch("/:id", authMiddleware, async (req, res, next) => {
       memberId,
       activityId,
     });
-    return res.status(200).send({ message: "Event updated!", event });
+    const event = await Events.findByPk(id, { include: [Members, Act] });
+
+    return res.status(200).send({
+      message: "Event updated!",
+      event,
+    });
   } catch (e) {
     next(e);
   }
