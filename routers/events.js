@@ -112,6 +112,7 @@ router.get("/:year/:month", authMiddleware, async (req, res, next) => {
     const events = await Events.findAll({
       where: {
         userId: req.user.id,
+        activityId: { [Op.ne]: "3" },
         date: {
           [Op.and]: [
             { [Op.startsWith]: req.params.year },
