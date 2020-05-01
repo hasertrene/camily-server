@@ -30,6 +30,30 @@ router.get("/", authMiddleware, async (req, res, next) => {
   }
 });
 
+router.get("/birthdays/:month", authMiddleware, async (req, res, next) => {
+  try {
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    let month = Number(req.params.month) + 1;
+    if (month < 10) {
+      month = 0 + String(month);
+    }
+    const birthdays = await Events.findAll({
+      where: {
+        userId: req.user.id,
+        activityId: "3",
+        date: { [Op.substring]: month },
+      },
+      include: [Act],
+    });
+    console.log("-" + req.params.month + "-");
+    res.status(200).send({ birthdays });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get("/:year", authMiddleware, async (req, res, next) => {
   try {
     if (req.user.id === null) {
