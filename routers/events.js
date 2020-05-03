@@ -45,7 +45,8 @@ router.get("/birthdays/:month", authMiddleware, async (req, res, next) => {
         activityId: "3",
         date: { [Op.substring]: month },
       },
-      include: [Act],
+      include: [Members, Act],
+      order: [["date", "ASC"]],
     });
     console.log("-" + req.params.month + "-");
     res.status(200).send({ birthdays });
