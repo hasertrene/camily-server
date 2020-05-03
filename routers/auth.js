@@ -135,8 +135,8 @@ router.post("/me", authMiddleware, async (req, res, next) => {
     });
     const act = await Act.findOne({ where: { type: "Birthday" } });
     await Events.create({
-      title: `Bday of ${getMember.firstName}`,
-      description: "Hooray!",
+      title: `${getMember.firstName}`,
+      description: null,
       date: getMember.birthday,
       time: null,
       userId: req.user.id,
@@ -163,6 +163,14 @@ router.patch("/me/:id", authMiddleware, async (req, res, next) => {
     }
 
     const member = await Members.findByPk(id);
+    const birthdayEvent = await Events.findOne({
+      where: {
+        title: member.firstName,
+        userId: req.user.id,
+        memberId: id,
+      },
+    });
+    console.log(birthdayEvent);
     await member.update({
       firstName,
       birthday,
@@ -171,6 +179,12 @@ router.patch("/me/:id", authMiddleware, async (req, res, next) => {
       parent,
       userId,
     });
+
+    await birthdayEvent.update({
+      title: firstName,
+      date: birthday,
+    });
+
     return res.status(201).send(member);
   } catch (e) {
     next(e);

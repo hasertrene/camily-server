@@ -54,6 +54,25 @@ router.get("/birthdays/:month", authMiddleware, async (req, res, next) => {
     next(e);
   }
 });
+router.get("/birthdays", authMiddleware, async (req, res, next) => {
+  try {
+    if (req.user.id === null) {
+      return res.status(400).send({ message: "Not logged in!" });
+    }
+    const birthdays = await Events.findAll({
+      where: {
+        userId: req.user.id,
+        activityId: "3",
+      },
+      include: [Members, Act],
+      order: [["date", "ASC"]],
+    });
+    console.log("-" + req.params.month + "-");
+    res.status(200).send({ birthdays });
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.get("/:year", authMiddleware, async (req, res, next) => {
   try {
